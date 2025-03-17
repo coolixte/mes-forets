@@ -1,0 +1,221 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Georgia', serif;
+    overflow-x: hidden;
+    background-color: #000;
+    color: #fff;
+    height: 500vh; /* Pour permettre le défilement */
+}
+
+.video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 1.5s ease;
+}
+
+.quotes-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.quote {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2.5rem;
+    text-align: center;
+    max-width: 80%;
+    opacity: 0;
+    padding: 20px 40px; /* Ajoute de l'espace à l'intérieur du cadre */
+    border: 2px solid rgba(255, 255, 255, 0); /* Bordure invisible par défaut */
+    border-radius: 20px; /* Coins arrondis */
+    transition: opacity 0.3s ease, text-shadow 0.3s ease, border-color 0.3s ease;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0); /* Fond transparent */
+}
+
+.quote p {
+    color: white;
+    text-shadow: 0 0 0px rgba(0, 0, 0, 0);
+    font-weight: 400;
+    letter-spacing: 1px;
+    line-height: 1.5;
+}
+
+.quote.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.quote.visible p {
+    text-shadow: 0 0 10px rgba(0, 0, 0, 1);
+}
+
+/* Styles pour la flèche de défilement - version plus petite et plus lente */
+.scroll-arrow {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 100;
+    animation: bounce 3s infinite; /* Animation plus lente: 3s au lieu de 2s */
+    cursor: default;
+}
+
+.scroll-arrow svg {
+    width: 30px; /* Plus petit: 30px au lieu de 40px */
+    height: 30px;
+}
+
+@keyframes bounce {
+    0%, 30%, 60%, 90%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    45% {
+        transform: translateX(-50%) translateY(-10px); /* Mouvement moins ample: -10px au lieu de -15px */
+    }
+    75% {
+        transform: translateX(-50%) translateY(-5px); /* Mouvement moins ample: -5px au lieu de -7px */
+    }
+}
+
+/* Bouton de son réduit en taille */
+.sound-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 25px; /* Plus petit: 36px au lieu de 48px */
+    height: 25px; /* Plus petit: 36px au lieu de 48px */
+    border-radius: 10px; /* Ajusté en proportion */
+    background-color: white;
+    color: black;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 1.5s ease;
+    z-index: 100;
+}
+
+/* Ajuster l'affichage des icônes de son */
+.sound-button svg {
+    width: 18px; /* Plus petit: 18px au lieu de 24px */
+    height: 18px;
+}
+
+/* Gestion de la barre horizontale pour indiquer le mode muet */
+.sound-button.muted::after {
+    content: '';
+    position: absolute;
+    width: 18px; /* Largeur de la barre horizontale */
+    height: 1.5px; /* Barre fine */
+    background-color: black;
+    transform: rotate(0deg); /* Barre horizontale */
+    display: block;
+}
+
+/* Supprimer ces règles pour que l'icône reste la même en mode muet */
+.sound-button.muted svg path:nth-child(2),
+.sound-button.muted svg path:nth-child(3) {
+    display: initial; /* Remplacer "none" par "initial" */
+}
+
+@media (max-width: 768px) {
+    .quote {
+        font-size: 1.5rem;
+    }
+}
+
+/* Ajout après les règles existantes */
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+/* Styles pour l'écran de démarrage */
+.start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1000;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1.5s ease;
+}
+
+.start-text {
+    color: white;
+    font-size: 28px;
+    font-family: 'Georgia', serif;
+    letter-spacing: 2px;
+    text-align: center;
+    transition: opacity 0.5s ease;
+}
+
+/* Transition pour la vidéo */
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 1.5s ease;
+}
+
+/* Transition pour le bouton son */
+.sound-button {
+    /* styles existants... */
+    transition: opacity 1.5s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Style pour le texte d'attribution - déplacé en haut au centre */
+.attribution {
+    position: fixed;
+    top: 20px;              /* Changé de bottom: 20px à top: 20px */
+    left: 50%;              /* Changé de left: 20px à left: 50% */
+    transform: translateX(-50%); /* Ajouté pour centrer horizontalement */
+    font-size: 12px;
+    font-weight: 300;
+    color: white;
+    font-family: 'Georgia', serif;
+    opacity: 0.8;
+    z-index: 100;
+    letter-spacing: 0.5px;
+    text-align: center;     /* Ajouté pour centrer le texte */
+} 
