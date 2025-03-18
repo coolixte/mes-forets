@@ -111,6 +111,61 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('videoTime', video.currentTime);
     });
     
+    // Variables pour l'animation de pulsation
+    let pulsePhase = 0;
+    const pulseSpeed = 0.03; // Vitesse de l'animation (plus petit = plus lent)
+    
+    // Fonction pour animer les pulsations des bordures
+    function animatePulseBorders() {
+        pulsePhase += pulseSpeed;
+        if (pulsePhase > Math.PI * 2) {
+            pulsePhase = 0; // Réinitialiser quand on atteint un cycle complet
+        }
+        
+        // Valeur sinusoïdale entre 0 et 1 pour l'animation
+        const pulseFactor = (Math.sin(pulsePhase) + 1) / 2;
+        
+        // Appliquer l'animation à toutes les citations visibles
+        quotes.forEach(quote => {
+            if (quote.classList.contains('visible')) {
+                // Récupérer l'opacité actuelle comme indicateur de visibilité
+                const opacity = parseFloat(quote.style.opacity || 0);
+                
+                if (opacity >= 0.1) {
+                    // Calculer l'amplitude de pulsation proportionnelle à la visibilité
+                    // La pulsation minimale est de 2px, la maximale de 10px
+                    const pulseAmplitude = 4 + (opacity * 20);
+                    
+                    // Calculer l'opacité de la bordure proportionnelle à la visibilité
+                    // L'opacité minimale est de 0.1, la maximale de 0.4
+                    const borderOpacity = 0.1 + (opacity * 0.3);
+                    
+                    // Position de base de la bordure (10px)
+                    const baseDistance = 1;
+                    
+                    // Calcul de la distance actuelle en fonction de la pulsation
+                    const currentDistance = baseDistance + (pulseFactor * pulseAmplitude);
+                    
+                    // Calculer l'opacité actuelle en fonction de la pulsation
+                    // Plus la bordure s'éloigne, plus elle devient transparente
+                    const currentOpacity = borderOpacity * (1 - (pulseFactor * 0.25));
+                    
+                    // Appliquer la box-shadow avec les valeurs calculées
+                    quote.style.boxShadow = `0 0 0 ${currentDistance}px rgba(255, 255, 255, ${currentOpacity})`;
+                } else {
+                    // En dessous de 10%, pas de seconde bordure
+                    quote.style.boxShadow = 'none';
+                }
+            }
+        });
+        
+        // Continuer l'animation
+        requestAnimationFrame(animatePulseBorders);
+    }
+    
+    // Démarrer l'animation
+    requestAnimationFrame(animatePulseBorders);
+    
     // ===== Gestion des citations strictement liées au défilement =====
     
     // Hauteur totale de défilement
@@ -148,7 +203,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Transition d'entrée très lente (0 à 1 sur 80% de la section)
                     const progress = (scrollPosition - fadeInStart) / (fullyVisibleStart - fadeInStart);
                     
-                    // Appliquer une courbe d'accélération pour rendre l'apparition encore plus progressive
                     // Utilisation d'une fonction de puissance pour ralentir l'apparition au début
                     const easedProgress = Math.pow(progress, 1.5);
                     
@@ -161,6 +215,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Animation progressive du cadre blanc
                     quote.style.borderColor = `rgba(255, 255, 255, ${easedProgress * 0.7})`; // Opacité max de 0.7 pour le cadre
                     quote.style.backgroundColor = `rgba(0, 0, 0, ${easedProgress * 0.2})`; // Fond légèrement noir pour améliorer la lisibilité
+                    
+                    // La pulsation est maintenant gérée par la fonction animatePulseBorders
                 } 
                 // Phase de visibilité complète
                 else if (scrollPosition >= fullyVisibleStart && scrollPosition < fadeOutStart) {
@@ -169,6 +225,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     quote.querySelector('p').style.textShadow = '0 0 10px rgba(0, 0, 0, 1)';
                     quote.style.borderColor = 'rgba(255, 255, 255, 0.7)'; // Cadre blanc à pleine opacité (0.7)
                     quote.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'; // Fond légèrement noir pour améliorer la lisibilité
+                    
+                    // La pulsation est maintenant gérée par la fonction animatePulseBorders
                 } 
                 // Phase de disparition progressive
                 else {
@@ -186,6 +244,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Disparition progressive du cadre
                     quote.style.borderColor = `rgba(255, 255, 255, ${easedProgress * 0.7})`;
                     quote.style.backgroundColor = `rgba(0, 0, 0, ${easedProgress * 0.2})`;
+                    
+                    // La pulsation est maintenant gérée par la fonction animatePulseBorders
                 }
             } else {
                 // Si la citation est hors de la zone visible
@@ -193,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 quote.classList.remove('visible');
                 quote.style.borderColor = 'rgba(255, 255, 255, 0)'; // Cadre invisible
                 quote.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Fond transparent
+                quote.style.boxShadow = 'none'; // Pas de seconde bordure
             }
         });
     });

@@ -239,4 +239,35 @@ video {
     z-index: 100;
     letter-spacing: 0.5px;
     text-align: center;     /* Ajouté pour centrer le texte */
+}
+
+/* Animation de pulsation pour différents niveaux de visibilité */
+@keyframes pulseBorderSmall {
+    0% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1); }
+    50% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0.08); }
+    100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1); }
+}
+
+@keyframes pulseBorderMedium {
+    0% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.25); }
+    50% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0.2); }
+    100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.25); }
+}
+
+@keyframes pulseBorderLarge {
+    0% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.4); }
+    50% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.3); }
+    100% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.4); }
+}
+
+.quote.pulse-border-small {
+    animation: pulseBorderSmall 3s infinite ease-in-out;
+}
+
+.quote.pulse-border-medium {
+    animation: pulseBorderMedium 3s infinite ease-in-out;
+}
+
+.quote.pulse-border-large {
+    animation: pulseBorderLarge 3s infinite ease-in-out;
 } 
