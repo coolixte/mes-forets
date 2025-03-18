@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Éléments du DOM
     const video = document.getElementById('forest-video');
-    const soundToggle = document.getElementById('sound-toggle');
+    const soundSlider = document.getElementById('sound-slider');
+    const soundControl = document.querySelector('.sound-control');
     const quotes = document.querySelectorAll('.quote');
     
     // Créer l'écran de démarrage noir avec texte
@@ -10,9 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     startScreen.innerHTML = '<div class="start-text">Cliquez pour commencer l\'expérience</div>';
     document.body.appendChild(startScreen);
     
-    // Masquer initialement la vidéo et le bouton de son
+    // Masquer initialement la vidéo et le contrôle du son
     video.style.opacity = 0;
-    soundToggle.style.opacity = 0;
+    soundControl.style.opacity = 0;
     
     // Gérer le clic sur l'écran de démarrage
     startScreen.addEventListener('click', function() {
@@ -34,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
             video.style.opacity = 1;
             video.style.transition = 'opacity 4s ease'; // Transition de 3s pour la vidéo
             
-            soundToggle.style.opacity = 1;
-            soundToggle.style.transition = 'opacity 4s ease'; // Transition de 3s pour le bouton de son
+            soundControl.style.opacity = 1;
+            soundControl.style.transition = 'opacity 4s ease'; // Transition de 3s pour le contrôle du son
             
             // Ajouter la flèche de défilement (qui reste visible)
             const scrollArrow = document.createElement('div');
@@ -75,19 +76,38 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== Gestion du son =====
     
-    // Vérifier si le son était désactivé lors de la dernière visite
-    const isMuted = localStorage.getItem('isMuted') === 'true';
-    video.muted = isMuted;
+    // Vérifier et charger le niveau de volume précédent, par défaut à 100 (100%)
+    const savedVolume = localStorage.getItem('volume') !== null 
+        ? parseInt(localStorage.getItem('volume')) 
+        : 100;
     
-    if (isMuted) {
-        soundToggle.classList.add('muted');
+    // Définir la valeur initiale du slider et le volume de la vidéo
+    soundSlider.value = savedVolume;
+    video.volume = savedVolume / 100;
+    
+    // Si la page se charge pour la première fois (pas de volume enregistré),
+    // désactiver le mode muet pour utiliser le volume à 100%
+    if (localStorage.getItem('volume') === null) {
+        video.muted = false;
     }
     
-    // Activer/désactiver le son lorsque le bouton est cliqué
-    soundToggle.addEventListener('click', function() {
-        video.muted = !video.muted;
-        soundToggle.classList.toggle('muted');
-        localStorage.setItem('isMuted', video.muted);
+    // Activer/désactiver le son lorsque le slider est déplacé
+    soundSlider.addEventListener('input', function() {
+        const volumeValue = parseInt(this.value);
+        
+        // Convertir la valeur du slider (0-100) en volume (0-1)
+        const actualVolume = volumeValue / 100;
+        
+        // Si le volume est à 0, mettre en sourdine
+        if (volumeValue === 0) {
+            video.muted = true;
+        } else {
+            video.muted = false;
+            video.volume = actualVolume;
+        }
+        
+        // Sauvegarder le niveau de volume
+        localStorage.setItem('volume', volumeValue);
     });
     
     // ===== Gestion des citations strictement liées au défilement =====
@@ -96,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const documentHeight = document.body.scrollHeight - window.innerHeight;
     
     // Augmenter encore plus l'espace de défilement (4 fois plus grand)
-    document.body.style.height = (documentHeight * 3) + "px";
+    document.body.style.height = (documentHeight * 4) + "px";
     
     // Recalculer la hauteur totale après avoir modifié la hauteur du document
     const newDocumentHeight = document.body.scrollHeight - window.innerHeight;
@@ -114,8 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const sectionStart = index * sectionHeight;
             const fadeInStart = sectionStart;
             // Modification ici : augmenter la zone d'apparition à 80% de la section
-            const fullyVisibleStart = sectionStart + (sectionHeight * 0.7); // Visible après 80% de la section (au lieu de 60%)
-            const fadeOutStart = sectionStart + (sectionHeight * 0.8); // Commencer à disparaître après 90% de la section (au lieu de 80%)
+            const fullyVisibleStart = sectionStart + (sectionHeight * 0.6); // Visible après 80% de la section (au lieu de 60%)
+            const fadeOutStart = sectionStart + (sectionHeight * 0.7); // Commencer à disparaître après 90% de la section (au lieu de 80%)
             const sectionEnd = sectionStart + sectionHeight;
             
             // Vérifier si l'utilisateur se trouve dans la zone d'influence de cette citation
