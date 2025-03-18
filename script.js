@@ -15,12 +15,29 @@ document.addEventListener('DOMContentLoaded', function() {
     video.style.opacity = 0;
     soundControl.style.opacity = 0;
     
+    // Variables pour le contrôle du son
+    let userInteracted = false;
+    
+    // Vérifier et charger le niveau de volume précédent, par défaut à 100 (100%)
+    const savedVolume = localStorage.getItem('volume') !== null 
+        ? parseInt(localStorage.getItem('volume')) 
+        : 100;
+    
+    // Définir la valeur initiale du slider
+    soundSlider.value = savedVolume;
+    
     // Gérer le clic sur l'écran de démarrage
     startScreen.addEventListener('click', function() {
+        userInteracted = true;
+        
         // Commencer à lire la vidéo immédiatement
         const playPromise = video.play().catch(error => {
             console.log("Erreur lors du démarrage de la vidéo:", error);
         });
+        
+        // Régler le volume et l'état muet correctement après le clic utilisateur
+        video.muted = (savedVolume === 0);
+        video.volume = savedVolume / 100;
         
         // Animation de fondu pour le texte - ralentie à 1.5s
         const startText = document.querySelector('.start-text');
@@ -76,20 +93,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== Gestion du son =====
     
-    // Vérifier et charger le niveau de volume précédent, par défaut à 100 (100%)
-    const savedVolume = localStorage.getItem('volume') !== null 
-        ? parseInt(localStorage.getItem('volume')) 
-        : 100;
-    
-    // Définir la valeur initiale du slider et le volume de la vidéo
-    soundSlider.value = savedVolume;
-    video.volume = savedVolume / 100;
-    
-    // Si la page se charge pour la première fois (pas de volume enregistré),
-    // désactiver le mode muet pour utiliser le volume à 100%
-    if (localStorage.getItem('volume') === null) {
-        video.muted = false;
-    }
+    // Vérifier si l'utilisateur a interagi avec la page dans cette session
+    document.addEventListener('click', function() {
+        if (!userInteracted) {
+            userInteracted = true;
+            
+            // Activer le son si slider n'est pas à 0
+            if (parseInt(soundSlider.value) > 0) {
+                video.muted = false;
+                video.volume = parseInt(soundSlider.value) / 100;
+            }
+        }
+    }, { once: true });
     
     // Activer/désactiver le son lorsque le slider est déplacé
     soundSlider.addEventListener('input', function() {
