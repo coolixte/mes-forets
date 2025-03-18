@@ -15,8 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     video.style.opacity = 0;
     soundControl.style.opacity = 0;
     
-    // Variables pour le contrôle du son
-    let userInteracted = false;
+    // ===== Gestion du son =====
     
     // Vérifier et charger le niveau de volume précédent, par défaut à 100 (100%)
     const savedVolume = localStorage.getItem('volume') !== null 
@@ -26,18 +25,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Définir la valeur initiale du slider
     soundSlider.value = savedVolume;
     
+    // Fonction pour appliquer correctement le volume à la vidéo
+    function applyVolumeSettings() {
+        const volumeValue = parseInt(soundSlider.value);
+        
+        // Si le volume est 0, la vidéo reste en muet
+        if (volumeValue === 0) {
+            video.muted = true;
+            video.volume = 0;
+        } else {
+            // Sinon, désactiver le mode muet et appliquer le volume
+            video.volume = volumeValue / 100;
+            video.muted = false;
+        }
+    }
+    
     // Gérer le clic sur l'écran de démarrage
     startScreen.addEventListener('click', function() {
-        userInteracted = true;
+        // Démarrer la lecture de la vidéo uniquement après l'interaction de l'utilisateur
+        const playPromise = video.play();
         
-        // Commencer à lire la vidéo immédiatement
-        const playPromise = video.play().catch(error => {
-            console.log("Erreur lors du démarrage de la vidéo:", error);
-        });
-        
-        // Régler le volume et l'état muet correctement après le clic utilisateur
-        video.muted = (savedVolume === 0);
-        video.volume = savedVolume / 100;
+        // Attendre que la promesse soit résolue avant d'appliquer les paramètres audio
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                // Appliquer les paramètres de volume après la résolution de la promesse
+                setTimeout(applyVolumeSettings, 100);
+            })
+            .catch(error => {
+                console.log("Erreur lors du démarrage de la vidéo:", error);
+            });
+        }
         
         // Animation de fondu pour le texte - ralentie à 1.5s
         const startText = document.querySelector('.start-text');
@@ -47,13 +64,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Faire apparaître la vidéo plus lentement après le clic
         setTimeout(() => {
             startScreen.style.opacity = 0;
-            startScreen.style.transition = 'opacity 4s ease'; // Transition de 3s pour l'écran noir
+            startScreen.style.transition = 'opacity 4s ease'; // Transition de 4s pour l'écran noir
             
             video.style.opacity = 1;
-            video.style.transition = 'opacity 4s ease'; // Transition de 3s pour la vidéo
+            video.style.transition = 'opacity 4s ease'; // Transition de 4s pour la vidéo
             
             soundControl.style.opacity = 1;
-            soundControl.style.transition = 'opacity 4s ease'; // Transition de 3s pour le contrôle du son
+            soundControl.style.transition = 'opacity 4s ease'; // Transition de 4s pour le contrôle du son
+            
+            // Ajouter un petit délai supplémentaire pour s'assurer que les paramètres audio sont appliqués
+            setTimeout(applyVolumeSettings, 200);
             
             // Ajouter la flèche de défilement (qui reste visible)
             const scrollArrow = document.createElement('div');
@@ -89,40 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Enregistrer la position de la vidéo avant de quitter la page
     window.addEventListener('beforeunload', function() {
         localStorage.setItem('videoTime', video.currentTime);
-    });
-    
-    // ===== Gestion du son =====
-    
-    // Vérifier si l'utilisateur a interagi avec la page dans cette session
-    document.addEventListener('click', function() {
-        if (!userInteracted) {
-            userInteracted = true;
-            
-            // Activer le son si slider n'est pas à 0
-            if (parseInt(soundSlider.value) > 0) {
-                video.muted = false;
-                video.volume = parseInt(soundSlider.value) / 100;
-            }
-        }
-    }, { once: true });
-    
-    // Activer/désactiver le son lorsque le slider est déplacé
-    soundSlider.addEventListener('input', function() {
-        const volumeValue = parseInt(this.value);
-        
-        // Convertir la valeur du slider (0-100) en volume (0-1)
-        const actualVolume = volumeValue / 100;
-        
-        // Si le volume est à 0, mettre en sourdine
-        if (volumeValue === 0) {
-            video.muted = true;
-        } else {
-            video.muted = false;
-            video.volume = actualVolume;
-        }
-        
-        // Sauvegarder le niveau de volume
-        localStorage.setItem('volume', volumeValue);
     });
     
     // ===== Gestion des citations strictement liées au défilement =====
@@ -229,4 +215,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Activer/désactiver le son lorsque le slider est déplacé
+    soundSlider.addEventListener('input', function() {
+        applyVolumeSettings();
+        
+        // Sauvegarder le niveau de volume
+        localStorage.setItem('volume', soundSlider.value);
+    });
+    
+    // Ajouter un gestionnaire d'événement de clic sur la page pour s'assurer que les paramètres
+    // de volume sont appliqués après toute interaction de l'utilisateur
+    document.addEventListener('click', function() {
+        // Délai court pour laisser le navigateur traiter d'abord l'événement de clic
+        setTimeout(applyVolumeSettings, 100);
+    }, { once: false });
 }); 
